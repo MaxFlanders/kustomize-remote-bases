@@ -1,0 +1,52 @@
+# TODO: add resource specifications
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: meteor-dashboard-server
+  namespace: default
+  labels:
+    app: meteor-dashboard-server
+spec:
+  replicas: set_in_overlay
+  selector:
+    matchLabels:
+      app: meteor-dashboard-server
+  template:
+    metadata:
+      labels:
+        app: meteor-dashboard-server
+    spec:
+      serviceAccountName: meteor-dashboard-server
+      containers:
+      - name: meteor-dashboard-server
+        image: set_in_overlay
+        ports:
+        - name: server-port
+          containerPort: 3003
+          protocol: TCP
+        envFrom:
+          - configMapRef:
+              name: meteor-dashboard-server
+        env:
+          # TODO: these vars should probably be set from envFrom, instead of env.valueFrom
+          # TODO: ACTUALLY, secrets should be mounted as volumes and read from the filesystem on app startup
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: meteor-dashboard-server
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: meteor-dashboard-server
+                key: password
+          - name: SLACK_API_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: meteor-dashboard-server
+                key: slack-api-token
+          - name: MSAL_V2_APP_ID
+            valueFrom:
+              secretKeyRef:
+                name: meteor-dashboard-server
+                key: msal-app-id
